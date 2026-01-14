@@ -1,10 +1,4 @@
-[6 tools called]
 
-### README draft for your project
-
-You can drop this into `README.md` at the root of `lazorkit-starter`.
-
-```markdown
 # Lazorkit Starter
 
 A minimal React + Vite starter that shows how to use the `@lazorkit/wallet` SDK to:
@@ -358,4 +352,3 @@ As a new developer, the main steps to integrate Lazorkit into your own project a
    - `GaslessTransaction` for building and sending on-chain gasless transfers.
 
 This starter is intentionally small so you can copy/paste the patterns into your own codebase and then extend them for your specific dapp logic.
-```
