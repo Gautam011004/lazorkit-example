@@ -69,7 +69,7 @@ export default function WalletConnection({
 
         <div className="flex gap-2">
           <button
-            className="px-3 py-2 rounded-md bg-white text-black disabled:opacity-50"
+            className="px-3 py-2 rounded-md bg-white text-black disabled:opacity-50 hover:cursor-pointer"
             disabled={!canConnect}
             onClick={handleConnect}
           >
@@ -77,7 +77,7 @@ export default function WalletConnection({
           </button>
 
           <button
-            className="px-3 py-2 rounded-md border border-zinc-700 text-white disabled:opacity-50"
+            className="px-3 py-2 rounded-md border border-zinc-700 text-white disabled:opacity-50 hover:cursor-pointer"
             disabled={!canDisconnect}
             onClick={handleDisconnect}
           >

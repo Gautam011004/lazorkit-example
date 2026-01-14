@@ -94,7 +94,7 @@ export default function GaslessTransaction({ onStatusChange }: GaslessTransactio
 
       <div className="flex items-center gap-2">
         <button
-          className="px-3 py-2 rounded-md bg-white text-black disabled:opacity-50"
+          className="px-3 py-2 rounded-md bg-white text-black disabled:opacity-50 hover:cursor-pointer"
           disabled={!canSendTx}
           onClick={handleSendTx}
         >
