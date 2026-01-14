@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { SystemProgram, TransactionInstruction, PublicKey } from '@solana/web3.js';
 import { useWallet } from '@lazorkit/wallet';
 
@@ -14,29 +14,39 @@ export default function GaslessTransaction({ onStatusChange }: GaslessTransactio
   const { isConnected, isLoading, isSigning, smartWalletPubkey, signAndSendTransaction } = useWallet();
   
   const [txSig, setTxSig] = useState<string | null>(null);
+  const recipientref= useRef<HTMLInputElement>(null);
+  const lamportsref = useRef<HTMLInputElement>(null);
 
-  const canSendTx = !isLoading && isConnected;
+  const canSendTx = !isLoading && isConnected && !!recipientref && !!lamportsref;
 
-  const buildDemoInstruction = (): TransactionInstruction => {
+  const buildTransferInstruction = (toPubkeyStr: string, lamportsStr: number): TransactionInstruction => {
     if (!smartWalletPubkey) {
       throw new Error('Smart wallet public key not available');
     }
+    let to: PublicKey;
+    try {
+      to = new PublicKey(toPubkeyStr);
+    } catch {
+      throw new Error('Invalid recipient public key');
+    }
 
-    // A harmless demo instruction: 0-lamport self transfer.
-    // This still demonstrates the full passkey + paymaster execution path.
-    const to = new PublicKey(smartWalletPubkey.toBase58());
+    if (!Number.isFinite(lamportsStr) || lamportsStr <= 0) {
+      throw new Error('Amount must be a positive number of Solana');
+    }
     return SystemProgram.transfer({
       fromPubkey: smartWalletPubkey,
       toPubkey: to,
-      lamports: 0,
+      lamports: lamportsStr,
     });
   };
 
   const handleSendTx = async () => {
     setTxSig(null);
-    onStatusChange?.('Preparing demo transaction…');
+    onStatusChange?.('Preparing transfer transaction…');
     try {
-      const ix = buildDemoInstruction();
+      const lamports = Number(lamportsref.current?.value);
+      const recipient = String(recipientref.current?.value);
+      const ix = buildTransferInstruction(recipient, lamports);
       onStatusChange?.('Opening passkey dialog to authorize…');
       const signature = await signAndSendTransaction({
         instructions: [ix],
@@ -57,6 +67,28 @@ export default function GaslessTransaction({ onStatusChange }: GaslessTransactio
         <div className="text-sm text-zinc-400">
           Builds an instruction and calls <span className="font-mono">signAndSendTransaction</span>.
           The SDK uses the paymaster as fee payer and submits the transaction.
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-zinc-400">Recipient public key</label>
+          <input
+            type="text"
+            className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            placeholder="Enter recipient's public key"
+            ref={recipientref}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-zinc-400">Amount (Solana)</label>
+          <input
+            type="number"
+            min="1"
+            className="w-full rounded-md border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            placeholder="e.g 1"
+            ref = {lamportsref}
+          />
         </div>
       </div>
 
@@ -83,7 +115,6 @@ export default function GaslessTransaction({ onStatusChange }: GaslessTransactio
             className="text-sm text-sky-300 hover:underline"
             href={explorerTxUrl(txSig)}
             target="_blank"
-            rel="noreferrer"
           >
             View on Solana Explorer (devnet)
           </a>
